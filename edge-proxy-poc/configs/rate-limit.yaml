@@ -1,0 +1,30 @@
+# OpenFlare Rate Limit Rules
+rules:
+  - id: "global-per-ip"
+    key: "ip"
+    rate: 50
+    burst: 100
+    enabled: true
+
+  - id: "api-per-ip"
+    key: "ip"
+    path_prefix: "/api/"
+    rate: 10
+    burst: 20
+    enabled: true
+
+  - id: "auth-per-ip"
+    key: "ip"
+    path_prefix: "/auth/"
+    rate: 5
+    burst: 10
+    enabled: true
+
+# Exemptions
+exemptions:
+  cidrs:
+    - "127.0.0.0/8"
+  paths:
+    - "/healthz"
+    - "/readyz"
+    - "/metrics"

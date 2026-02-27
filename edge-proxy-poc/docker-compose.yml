@@ -1,0 +1,68 @@
+services:
+  proxy:
+    build:
+      context: ./proxy
+      dockerfile: Dockerfile
+    ports:
+      - "9080:8080"
+      - "9081:8081"
+    volumes:
+      - ./configs:/etc/openflare:ro
+    environment:
+      - OPENFLARE_CONFIG=/etc/openflare/proxy.dev.yaml
+      - OPENFLARE_WAF_RULES=/etc/openflare/rules.waf.yaml
+      - OPENFLARE_CACHE_RULES=/etc/openflare/cache-rules.yaml
+      - OPENFLARE_RATE_LIMIT_RULES=/etc/openflare/rate-limit.yaml
+    depends_on:
+      testsite:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    networks:
+      - frontend
+      - backend
+    restart: unless-stopped
+
+  testsite:
+    build:
+      context: ./testsite
+      dockerfile: Dockerfile
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    networks:
+      - backend
+    restart: unless-stopped
+
+  e2e:
+    build:
+      context: ./e2e
+      dockerfile: Dockerfile
+    depends_on:
+      proxy:
+        condition: service_healthy
+    environment:
+      - PROXY_URL=http://proxy:8080
+      - ADMIN_URL=http://proxy:8081
+      - ADMIN_TOKEN=change-me
+      - ORIGIN_URL=http://testsite:8000
+    networks:
+      - frontend
+      - backend
+    profiles:
+      - test
+
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge

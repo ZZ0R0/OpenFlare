@@ -1,0 +1,53 @@
+# OpenFlare WAF Rules
+# Mode: "shadow" (log only) or "enforce" (block)
+mode: "enforce"
+
+rules:
+  - id: "block-path-traversal"
+    enabled: true
+    phase: "request"
+    description: "Block directory traversal attempts"
+    match:
+      any:
+        - path_regex: "(?i)(\\.\\./|%2e%2e%2f|%2e%2e/|\\.\\.%2f)"
+    action:
+      type: "block"
+      status_code: 403
+      log: true
+
+  - id: "block-sqli-basic"
+    enabled: true
+    phase: "request"
+    description: "Block basic SQL injection patterns"
+    match:
+      any:
+        - query_regex: "(?i)(union\\s+select|or\\s+1\\s*=\\s*1|drop\\s+table|;\\s*--|'\\s*or\\s*')"
+        - body_regex: "(?i)(union\\s+select|or\\s+1\\s*=\\s*1|drop\\s+table|;\\s*--|'\\s*or\\s*')"
+    action:
+      type: "block"
+      status_code: 403
+      log: true
+
+  - id: "shadow-xss-basic"
+    enabled: true
+    phase: "request"
+    description: "Log basic XSS patterns (shadow mode regardless of global mode)"
+    match:
+      any:
+        - query_regex: "(?i)(<script|javascript:|onerror\\s*=)"
+        - body_regex: "(?i)(<script|javascript:|onerror\\s*=)"
+    action:
+      type: "log"
+      log: true
+
+  - id: "block-common-scanners"
+    enabled: true
+    phase: "request"
+    description: "Block common vulnerability scanner user agents"
+    match:
+      any:
+        - user_agent_regex: "(?i)(nikto|sqlmap|nmap|masscan|zgrab)"
+    action:
+      type: "block"
+      status_code: 403
+      log: true

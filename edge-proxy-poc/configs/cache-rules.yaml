@@ -1,0 +1,68 @@
+# OpenFlare Cache Rules
+rules:
+  - id: "static-assets"
+    path_prefix: "/static/"
+    methods: ["GET", "HEAD"]
+    cache:
+      eligible: true
+      ttl_seconds: 3600
+
+  - id: "cache-public-short"
+    path_prefix: "/cache/public-short"
+    methods: ["GET", "HEAD"]
+    cache:
+      eligible: true
+      ttl_seconds: 5
+
+  - id: "cache-public-long"
+    path_prefix: "/cache/public-long"
+    methods: ["GET", "HEAD"]
+    cache:
+      eligible: true
+      ttl_seconds: 60
+
+  - id: "cache-etag"
+    path_prefix: "/cache/etag"
+    methods: ["GET", "HEAD"]
+    cache:
+      eligible: true
+      ttl_seconds: 30
+
+  - id: "cache-last-modified"
+    path_prefix: "/cache/last-modified"
+    methods: ["GET", "HEAD"]
+    cache:
+      eligible: true
+      ttl_seconds: 30
+
+  - id: "api-no-cache"
+    path_prefix: "/api/"
+    cache:
+      eligible: false
+
+  - id: "auth-no-cache"
+    path_prefix: "/auth/"
+    cache:
+      eligible: false
+
+  - id: "webhooks-no-cache"
+    path_prefix: "/webhooks/"
+    cache:
+      eligible: false
+
+  - id: "admin-no-cache"
+    path_prefix: "/admin/"
+    cache:
+      eligible: false
+
+  - id: "debug-no-cache"
+    path_prefix: "/debug/"
+    cache:
+      eligible: false
+
+  - id: "homepage"
+    path_exact: "/"
+    methods: ["GET", "HEAD"]
+    cache:
+      eligible: true
+      ttl_seconds: 10

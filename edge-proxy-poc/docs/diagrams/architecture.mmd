@@ -1,0 +1,16 @@
+flowchart LR
+    C[Client HTTP<br/>Tests E2E] --> P[Go Edge Proxy<br/>:8080 public<br/>:8081 admin]
+    P -->|miss / pass| O[Python Test Site<br/>FastAPI :8000]
+    P --> M[/metrics<br/>Prometheus format]
+    P --> A[/admin/*<br/>Purge / Stats / Config]
+    T[Pytest E2E Runner] --> P
+
+    subgraph Docker Compose
+        direction TB
+        subgraph frontend
+            P
+        end
+        subgraph backend
+            O
+        end
+    end

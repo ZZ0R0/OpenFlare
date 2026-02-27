@@ -1,0 +1,26 @@
+flowchart TD
+    R[Incoming Request] --> ID["1. Request ID<br/>UUID v4 generation"]
+    ID --> LOG["2. Access Log<br/>Start timer"]
+    LOG --> REC["3. Panic Recovery"]
+    REC --> LIM["4. Size Limits<br/>Max headers / body"]
+    LIM -->|Too large| R413[413 Payload Too Large]
+    LIM --> NORM["5. Normalization<br/>Path / Query / Headers"]
+    NORM --> WAF["6. WAF Inspection<br/>Rule matching"]
+    WAF -->|BLOCK enforce| B403[403 Forbidden]
+    WAF -->|LOG shadow| RL
+    WAF -->|ALLOW| RL["7. Rate Limiting<br/>Token bucket"]
+    RL -->|DENY| R429[429 Too Many Requests]
+    RL -->|ALLOW| ROUTE["8. Route Selection"]
+    ROUTE --> ELIG["9. Cache Eligibility"]
+    ELIG -->|BYPASS| FWD_BP["Forward to origin<br/>BYPASS"]
+    ELIG -->|ELIGIBLE| LOOK["10. Cache Lookup"]
+    LOOK -->|HIT fresh| SERVE["Serve cached<br/>HIT"]
+    LOOK -->|MISS| SF["11. Singleflight"]
+    SF --> FWD["12. Forward to origin"]
+    FWD --> STORE_CHK["13. Store Decision"]
+    STORE_CHK -->|STORE| CACHE_W["Store in cache"]
+    STORE_CHK -->|NO STORE| PASS["Pass through"]
+    FWD_BP --> RESP["14. Response<br/>Debug headers + log"]
+    CACHE_W --> RESP
+    PASS --> RESP
+    SERVE --> RESP

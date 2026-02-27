@@ -1,0 +1,17 @@
+flowchart TB
+    subgraph "Docker Compose Network"
+        subgraph "frontend"
+            E2E[e2e container<br/>pytest + httpx]
+            PROXY_PUB[proxy :8080]
+            PROXY_ADM[proxy :8081]
+        end
+
+        subgraph "backend"
+            PROXY_INT[proxy internal]
+            ORIGIN[testsite :8000<br/>FastAPI]
+        end
+    end
+
+    E2E -->|HTTP requests| PROXY_PUB
+    E2E -->|Admin API| PROXY_ADM
+    PROXY_INT -->|reverse proxy| ORIGIN
