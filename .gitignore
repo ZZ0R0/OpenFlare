@@ -1,0 +1,13 @@
+# Go
+/edge-proxy-poc/proxy/edgeproxy
+*.test
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+
+# Docker / local
+*.log
+.env
